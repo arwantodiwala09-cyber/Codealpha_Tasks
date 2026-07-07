@@ -7,8 +7,18 @@ export const updateUserRole =
   ) => {
     const { data } =
       await API.put(
-        `/team/users/${userId}/role`,
+        `/users/${userId}/role`,
         { role }
+      );
+
+    return data;
+  };
+
+export const getUserProfile =
+  async (id) => {
+    const { data } =
+      await API.get(
+        `/users/profile/${id}`
       );
 
     return data;

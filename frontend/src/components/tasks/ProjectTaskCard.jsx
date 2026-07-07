@@ -1,19 +1,21 @@
 import {
-  Calendar,
-  Flag,
   Trash2,
   User,
+  MessageSquare,
+  History,
 } from "lucide-react";
 
-import EditTaskModal from "./EditTaskModal";
+import TimerButton from "../time/TimerButton";
 
 export default function ProjectTaskCard({
   task,
   members,
-  onDelete,
   onEdit,
-  canDelete = false,
-  canEdit = false,
+  onDelete,
+  onComment,
+  onActivity,
+  canEdit,
+  canDelete,
 }) {
   const priorityStyles = {
     High:
@@ -28,17 +30,15 @@ export default function ProjectTaskCard({
 
   const isOverdue =
     task.dueDate &&
-    new Date(task.dueDate) <
-      new Date() &&
+    new Date(task.dueDate) < new Date() &&
     task.status !== "done";
 
   const handleDelete = () => {
-    const confirmDelete =
+    if (
       window.confirm(
         `Delete "${task.title}"?`
-      );
-
-    if (confirmDelete) {
+      )
+    ) {
       onDelete(task._id);
     }
   };
@@ -46,94 +46,299 @@ export default function ProjectTaskCard({
   return (
     <div
       className={`
-        bg-slate-800
+        relative
+        overflow-hidden
+        bg-slate-900
         border
-        rounded-2xl
-        p-4
-        hover:border-cyan-500
+        rounded-3xl
+        p-5
         transition-all
+        duration-300
+        hover:-translate-y-1
+        hover:shadow-xl
+        hover:shadow-cyan-500/10
         ${
           isOverdue
-            ? "border-red-500"
-            : "border-slate-700"
+            ? "border-red-500/60"
+            : "border-slate-800 hover:border-cyan-500/40"
         }
       `}
     >
-      <div className="flex justify-between items-start gap-3">
-        <h4 className="font-semibold text-white">
-          {task.title}
-        </h4>
+      <div
+        className={`
+          absolute
+          top-0
+          left-0
+          w-full
+          h-1
+          ${
+            task.priority === "High"
+              ? "bg-red-500"
+              : task.priority === "Medium"
+              ? "bg-yellow-500"
+              : "bg-cyan-500"
+          }
+        `}
+      />
+            <div className="flex justify-between items-start gap-4">
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-4 flex-1">
+
+          <div
+            className="
+              h-12
+              w-12
+              rounded-full
+              bg-gradient-to-br
+              from-cyan-500
+              to-blue-600
+              flex
+              items-center
+              justify-center
+              text-white
+              font-bold
+              text-lg
+              shrink-0
+            "
+          >
+            {task.assignedTo?.name
+              ? task.assignedTo.name
+                  .charAt(0)
+                  .toUpperCase()
+              : "U"}
+          </div>
+
+          <div className="flex-1 min-w-0">
+
+            <h4
+              className="
+                text-white
+                font-bold
+                text-lg
+                leading-tight
+                truncate
+              "
+            >
+              {task.title}
+            </h4>
+
+            <p
+              className="
+                mt-1
+                text-sm
+                text-slate-400
+              "
+            >
+              Assigned to{" "}
+              <span className="text-cyan-400 font-medium">
+                {task.assignedTo?.name ||
+                  "Unassigned"}
+              </span>
+            </p>
+
+            {task.description && (
+              <p
+                className="
+                  mt-3
+                  text-sm
+                  text-slate-400
+                  leading-6
+                  line-clamp-2
+                "
+              >
+                {task.description}
+              </p>
+            )}
+
+          </div>
+
+        </div>
+
+        <span
+          className={`
+            px-3
+            py-1
+            rounded-full
+            text-xs
+            font-semibold
+            ${priorityStyles[task.priority]}
+          `}
+        >
+          {task.priority}
+        </span>
+
+      </div>
+
+      <div className="mt-5 pt-5 border-t border-slate-800">
+
+        <div className="flex flex-wrap gap-2 mb-4">
+
           <span
             className={`
               px-3
               py-1
               rounded-full
               text-xs
-              font-medium
-              ${priorityStyles[task.priority]}
+              font-semibold
+              ${
+                task.status === "done"
+                  ? "bg-green-500/10 text-green-400"
+                  : task.status === "progress"
+                  ? "bg-cyan-500/10 text-cyan-400"
+                  : task.status === "review"
+                  ? "bg-yellow-500/10 text-yellow-400"
+                  : "bg-slate-700 text-slate-300"
+              }
             `}
           >
-            {task.priority}
+            {task.status.charAt(0).toUpperCase() +
+              task.status.slice(1)}
           </span>
 
-          {canEdit && (
-            <EditTaskModal
-              task={task}
-              members={members}
-              onEdit={onEdit}
-            />
+          {task.dueDate && (
+            <span
+              className={`
+                px-3
+                py-1
+                rounded-full
+                text-xs
+                font-semibold
+                ${
+                  isOverdue
+                    ? "bg-red-500/10 text-red-400"
+                    : "bg-slate-700 text-slate-300"
+                }
+              `}
+            >
+              📅{" "}
+              {new Date(
+                task.dueDate
+              ).toLocaleDateString()}
+            </span>
           )}
 
-          {canDelete && (
-            <button
-              onClick={handleDelete}
+        </div>
+                <div className="flex justify-between items-center">
+
+          <div className="flex items-center gap-2">
+
+            <User
+              size={14}
+              className="text-cyan-400"
+            />
+
+            <span className="text-xs text-slate-400">
+              {task.assignedTo?.name ||
+                "Unassigned"}
+            </span>
+
+          </div>
+
+          {isOverdue && (
+            <div
               className="
+                px-3
+                py-1
+                rounded-full
+                bg-red-500/10
                 text-red-400
-                hover:text-red-300
-                transition
+                text-xs
+                font-semibold
               "
             >
-              <Trash2 size={16} />
-            </button>
+              ⚠ Overdue
+            </div>
           )}
+
         </div>
+
       </div>
 
-      {task.description && (
-        <p className="text-slate-400 text-sm mt-3">
-          {task.description}
-        </p>
-      )}
+      <div className="mt-5 pt-4 border-t border-slate-700">
 
-      <div className="mt-4 pt-4 border-t border-slate-700 space-y-2 text-xs text-slate-500">
-        <div className="flex items-center gap-2">
-          <Flag size={12} />
-          Status: {task.status}
-        </div>
+        <div className="flex justify-between items-center gap-4 flex-wrap">
 
-        <div className="flex items-center gap-2">
-          <Calendar size={12} />
-          {task.dueDate
-            ? new Date(
-                task.dueDate
-              ).toLocaleDateString()
-            : "No Due Date"}
-        </div>
+          <TimerButton taskId={task._id} />
 
-        <div className="flex items-center gap-2">
-          <User size={12} />
-          Assigned:{" "}
-          {task.assignedTo?.name ||
-            "Unassigned"}
-        </div>
+          <div className="flex items-center gap-2">
 
-        {isOverdue && (
-          <div className="text-red-400 font-medium">
-            ⚠ Overdue Task
+            <button
+              onClick={() => onComment(task)}
+              className="
+                h-10
+                w-10
+                rounded-xl
+                bg-slate-800
+                text-cyan-400
+                hover:bg-slate-700
+                transition-all
+                flex
+                items-center
+                justify-center
+              "
+            >
+              <MessageSquare size={17} />
+            </button>
+
+            <button
+              onClick={() => onActivity(task)}
+              className="
+                h-10
+                w-10
+                rounded-xl
+                bg-slate-800
+                text-slate-300
+                hover:bg-slate-700
+                transition-all
+                flex
+                items-center
+                justify-center
+              "
+            >
+              <History size={17} />
+            </button>
+
+            {canEdit && (
+              <button
+                onClick={() => onEdit(task)}
+                className="
+                  h-10
+                  px-4
+                  rounded-xl
+                  bg-cyan-500/10
+                  text-cyan-400
+                  hover:bg-cyan-500/20
+                  transition-all
+                  text-sm
+                  font-medium
+                "
+              >
+                Edit
+              </button>
+            )}
+
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                className="
+                  h-10
+                  w-10
+                  rounded-xl
+                  bg-red-500/10
+                  text-red-400
+                  hover:bg-red-500/20
+                  transition-all
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                <Trash2 size={17} />
+              </button>
+            )}
+
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

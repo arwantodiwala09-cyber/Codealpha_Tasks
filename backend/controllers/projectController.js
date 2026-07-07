@@ -1,6 +1,11 @@
 const Project = require("../models/Project");
 const User = require("../models/User");
+const Task = require("../models/Task");
 const Notification = require("../models/Notification");
+
+const {
+  getIO,
+} = require("../socket/socket");
 
 // Create Project
 const createProject = async (
@@ -9,26 +14,112 @@ const createProject = async (
 ) => {
   try {
     const {
-      name,
-      description,
-    } = req.body;
+  name,
+  description,
+  template,
+} = req.body;
 
     const project =
       await Project.create({
         name,
         description,
+        template,
         owner: req.user._id,
         members: [
           req.user._id,
         ],
       });
+let templateTasks = [];
 
-    // Notification
-    await Notification.create({
-      user: req.user._id,
-      message: `Project created: ${project.name}`,
-      type: "project_created",
-    });
+switch (template) {
+  case "Web Development":
+    templateTasks = [
+      "Requirement Analysis",
+      "UI Design",
+      "Frontend Development",
+      "Backend Development",
+      "Database Design",
+      "API Integration",
+      "Testing",
+      "Deployment",
+    ];
+    break;
+
+  case "Mobile App":
+    templateTasks = [
+      "Planning",
+      "UI/UX",
+      "Flutter / React Native",
+      "Authentication",
+      "Testing",
+      "Play Store Upload",
+    ];
+    break;
+
+  case "Research Project":
+    templateTasks = [
+      "Literature Survey",
+      "Problem Statement",
+      "Methodology",
+      "Implementation",
+      "Testing",
+      "Paper Writing",
+    ];
+    break;
+
+  case "Hackathon":
+    templateTasks = [
+      "Idea",
+      "Planning",
+      "UI",
+      "Backend",
+      "Presentation",
+      "Final Demo",
+    ];
+    break;
+
+  case "College Project":
+    templateTasks = [
+      "Proposal",
+      "Design",
+      "Development",
+      "Documentation",
+      "Testing",
+      "Final Submission",
+    ];
+    break;
+
+  default:
+    templateTasks = [];
+}
+
+for (const title of templateTasks) {
+  await Task.create({
+    title,
+    project: project._id,
+    assignedTo: req.user._id,
+  });
+}
+    const notification =
+      await Notification.create({
+        user:
+          req.user._id,
+        message: `Project created: ${project.name}`,
+        type:
+          "project_created",
+      });
+
+    try {
+      getIO().emit(
+        "newNotification",
+        notification
+      );
+    } catch (err) {
+      console.error(
+        "Notification Socket Error:",
+        err.message
+      );
+    }
 
     res.status(201).json(
       project
@@ -41,26 +132,96 @@ const createProject = async (
   }
 };
 
-// Get User Projects
+// Get Projects
 const getProjects = async (
   req,
   res
 ) => {
   try {
-    const projects =
-      await Project.find({
-        members:
-          req.user._id,
-      })
-        .populate(
-          "owner",
-          "name email"
-        )
-        .sort({
-          createdAt: -1,
-        });
+    let projects;
 
-    res.json(projects);
+    if (
+      req.user.role ===
+      "Admin"
+    ) {
+      projects =
+        await Project.find()
+          .populate(
+            "owner",
+            "name email"
+          )
+          .populate(
+            "members",
+            "name email"
+          )
+          .sort({
+            createdAt: -1,
+          });
+    } else {
+      projects =
+        await Project.find({
+          members:
+            req.user._id,
+        })
+          .populate(
+            "owner",
+            "name email"
+          )
+          .populate(
+            "members",
+            "name email"
+          )
+          .sort({
+            createdAt: -1,
+          });
+    }
+
+    const projectsWithProgress =
+      await Promise.all(
+        projects.map(
+          async (project) => {
+            const totalTasks =
+              await Task.countDocuments(
+                {
+                  project:
+                    project._id,
+                }
+              );
+
+            const completedTasks =
+              await Task.countDocuments(
+                {
+                  project:
+                    project._id,
+                  status:
+                    "done",
+                }
+              );
+
+            const progress =
+              totalTasks === 0
+                ? 0
+                : Math.round(
+                    (
+                      completedTasks /
+                      totalTasks
+                    ) *
+                      100
+                  );
+
+            return {
+              ...project.toObject(),
+              totalTasks,
+              completedTasks,
+              progress,
+            };
+          }
+        )
+      );
+
+    res.json(
+      projectsWithProgress
+    );
   } catch (error) {
     res.status(500).json({
       message:
@@ -95,7 +256,41 @@ const getProjectById =
           });
       }
 
-      res.json(project);
+      const totalTasks =
+        await Task.countDocuments(
+          {
+            project:
+              project._id,
+          }
+        );
+
+      const completedTasks =
+        await Task.countDocuments(
+          {
+            project:
+              project._id,
+            status:
+              "done",
+          }
+        );
+
+      const progress =
+        totalTasks === 0
+          ? 0
+          : Math.round(
+              (
+                completedTasks /
+                totalTasks
+              ) *
+                100
+            );
+
+      res.json({
+        ...project.toObject(),
+        totalTasks,
+        completedTasks,
+        progress,
+      });
     } catch (error) {
       res.status(500).json({
         message:
@@ -175,12 +370,26 @@ const addMemberToProject =
 
       await project.save();
 
-      // Notification
-      await Notification.create({
-        user: user._id,
-        message: `You were added to project: ${project.name}`,
-        type: "member_added",
-      });
+      const notification =
+        await Notification.create({
+          user:
+            user._id,
+          message: `You were added to project: ${project.name}`,
+          type:
+            "member_added",
+        });
+
+      try {
+        getIO().emit(
+          "newNotification",
+          notification
+        );
+      } catch (err) {
+        console.error(
+          "Notification Socket Error:",
+          err.message
+        );
+      }
 
       const updatedProject =
         await Project.findById(
@@ -251,18 +460,30 @@ const removeMemberFromProject =
           });
       }
 
-      // Notification
-      await Notification.create({
-        user: memberId,
-        message: `You were removed from project: ${project.name}`,
-        type: "member_removed",
-      });
+      const notification =
+        await Notification.create({
+          user:
+            memberId,
+          message: `You were removed from project: ${project.name}`,
+          type:
+            "member_removed",
+        });
+
+      try {
+        getIO().emit(
+          "newNotification",
+          notification
+        );
+      } catch (err) {
+        console.error(
+          "Notification Socket Error:",
+          err.message
+        );
+      }
 
       project.members =
         project.members.filter(
-          (
-            member
-          ) =>
+          (member) =>
             member.toString() !==
             memberId
         );

@@ -20,9 +20,126 @@ body {
 
   text-rendering: optimizeLegibility;
 
-  -webkit-font-smoothing:
-    antialiased;
+  -webkit-font-smoothing: antialiased;
 
-  -moz-osx-font-smoothing:
-    grayscale;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================= */
+/* React Big Calendar Dark Theme */
+/* ============================= */
+
+.rbc-calendar {
+  background: transparent;
+  color: #ffffff;
+}
+
+.rbc-toolbar {
+  margin-bottom: 1rem;
+}
+
+.rbc-toolbar button {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.rbc-toolbar button:hover {
+  background: #0891b2 !important;
+  color: white !important;
+}
+
+.rbc-toolbar button.rbc-active {
+  background: #06b6d4 !important;
+  color: white !important;
+}
+
+.rbc-toolbar-label {
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.rbc-header {
+  background: #0f172a;
+  color: white;
+  border-color: #334155 !important;
+  padding: 10px;
+  font-weight: 700;
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  border: 1px solid #334155 !important;
+}
+
+.rbc-month-row,
+.rbc-day-bg,
+.rbc-time-content,
+.rbc-time-header-content,
+.rbc-time-slot,
+.rbc-date-cell {
+  border-color: #334155 !important;
+}
+
+.rbc-day-bg {
+  background: #0f172a;
+}
+
+.rbc-off-range-bg {
+  background: #172033 !important;
+}
+
+.rbc-off-range {
+  color: #64748b !important;
+}
+
+.rbc-today {
+  background: rgba(6, 182, 212, 0.15) !important;
+}
+
+.rbc-date-cell {
+  padding: 6px;
+}
+
+.rbc-date-cell a {
+  color: white !important;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.rbc-event {
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 3px 8px !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rbc-show-more {
+  color: #06b6d4 !important;
+  font-weight: 600;
+  background: transparent !important;
+}
+
+.rbc-agenda-view table {
+  background: #0f172a;
+  color: white;
+}
+
+.rbc-agenda-view table tbody > tr > td,
+.rbc-agenda-view table thead > tr > th {
+  border-color: #334155 !important;
+}
+
+.rbc-time-view .rbc-time-gutter,
+.rbc-timeslot-group {
+  background: #0f172a;
+  border-color: #334155 !important;
+}
+
+.rbc-current-time-indicator {
+  background: #06b6d4;
 }

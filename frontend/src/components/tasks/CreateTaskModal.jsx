@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 
 export default function CreateTaskModal({
+  isOpen,
+  onClose,
   projectId,
   members = [],
   onCreate,
 }) {
-  const [isOpen, setIsOpen] =
-    useState(false);
-
+  console.log("CreateTaskModal", isOpen);
   const [title, setTitle] =
     useState("");
 
@@ -53,32 +53,12 @@ export default function CreateTaskModal({
     setDueDate("");
     setAssignedTo("");
 
-    setIsOpen(false);
+    onClose();
   };
 
   return (
     <>
-      <div className="mb-8 flex justify-end">
-        <button
-          onClick={() =>
-            setIsOpen(true)
-          }
-          className="
-            flex
-            items-center
-            gap-2
-            bg-cyan-500
-            hover:bg-cyan-600
-            px-5
-            py-3
-            rounded-xl
-            font-medium
-          "
-        >
-          <Plus size={18} />
-          New Task
-        </button>
-      </div>
+  
 
       {isOpen && (
         <div
@@ -110,9 +90,7 @@ export default function CreateTaskModal({
               </h2>
 
               <button
-                onClick={() =>
-                  setIsOpen(false)
-                }
+               onClick={onClose}
               >
                 <X size={20} />
               </button>

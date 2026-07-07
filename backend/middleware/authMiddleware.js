@@ -41,6 +41,24 @@ const protect = async (
           });
       }
 
+      // Blocked Account Check
+      if (
+        req.user.isBlocked
+      ) {
+        return res
+          .status(403)
+          .json({
+            message:
+              "Your account has been blocked. Please contact the administrator.",
+          });
+      }
+
+      // Update Last Login
+      req.user.lastLogin =
+        new Date();
+
+      await req.user.save();
+
       next();
     } else {
       return res

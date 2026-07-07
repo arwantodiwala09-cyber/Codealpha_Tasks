@@ -15,6 +15,23 @@ const getAuthConfig = () => {
   };
 };
 
+// ==============================
+// Calendar - Get All Tasks
+// ==============================
+export const getTasks =
+  async () => {
+    const response =
+      await axios.get(
+        `${API_URL}/all`,
+        getAuthConfig()
+      );
+
+    return response.data;
+  };
+
+// ==============================
+// My Created Tasks
+// ==============================
 export const getMyTasks =
   async () => {
     const response =
@@ -26,6 +43,9 @@ export const getMyTasks =
     return response.data;
   };
 
+// ==============================
+// Assigned Tasks
+// ==============================
 export const getAssignedTasks =
   async () => {
     const response =
@@ -37,6 +57,9 @@ export const getAssignedTasks =
     return response.data;
   };
 
+// ==============================
+// Due Today
+// ==============================
 export const getDueTodayTasks =
   async () => {
     const response =
@@ -48,6 +71,9 @@ export const getDueTodayTasks =
     return response.data;
   };
 
+// ==============================
+// Overdue Tasks
+// ==============================
 export const getOverdueTasks =
   async () => {
     const response =
@@ -59,6 +85,9 @@ export const getOverdueTasks =
     return response.data;
   };
 
+// ==============================
+// Tasks By Project
+// ==============================
 export const getTasksByProject =
   async (projectId) => {
     const response =
@@ -70,6 +99,9 @@ export const getTasksByProject =
     return response.data;
   };
 
+// ==============================
+// Create Task
+// ==============================
 export const createTask =
   async (taskData) => {
     const response =
@@ -82,8 +114,14 @@ export const createTask =
     return response.data;
   };
 
+// ==============================
+// Update Task
+// ==============================
 export const updateTask =
-  async (id, taskData) => {
+  async (
+    id,
+    taskData
+  ) => {
     const response =
       await axios.put(
         `${API_URL}/${id}`,
@@ -94,6 +132,9 @@ export const updateTask =
     return response.data;
   };
 
+// ==============================
+// Delete Task
+// ==============================
 export const deleteTask =
   async (id) => {
     const response =

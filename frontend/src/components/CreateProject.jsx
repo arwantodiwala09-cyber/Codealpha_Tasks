@@ -12,7 +12,6 @@ export default function CreateProject({
   const { user } =
     useAuth();
 
-  // Hide from Members
   if (
     user?.role ===
     "Member"
@@ -21,17 +20,19 @@ export default function CreateProject({
   }
 
   const [name, setName] =
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useState("");
 
   const [
     description,
     setDescription,
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   ] = useState("");
 
+  const [
+    template,
+    setTemplate,
+  ] = useState("Blank");
+
   const [loading, setLoading] =
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useState(false);
 
   const handleSubmit = async (
@@ -47,10 +48,12 @@ export default function CreateProject({
       await onCreate({
         name,
         description,
+        template,
       });
 
       setName("");
       setDescription("");
+      setTemplate("Blank");
     } finally {
       setLoading(false);
     }
@@ -122,6 +125,7 @@ export default function CreateProject({
         className="p-6"
       >
         <div className="space-y-5">
+
           <div>
             <label
               className="
@@ -203,6 +207,67 @@ export default function CreateProject({
             />
           </div>
 
+          <div>
+            <label
+              className="
+                block
+                text-sm
+                font-semibold
+                text-slate-300
+                mb-2
+              "
+            >
+              Project Template
+            </label>
+
+            <select
+              value={template}
+              onChange={(e) =>
+                setTemplate(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+                bg-slate-800
+                border
+                border-slate-700
+                rounded-2xl
+                px-4
+                py-4
+                text-white
+                focus:outline-none
+                focus:border-cyan-500
+                focus:ring-2
+                focus:ring-cyan-500/20
+              "
+            >
+              <option value="Blank">
+                Blank
+              </option>
+
+              <option value="Web Development">
+                🌐 Web Development
+              </option>
+
+              <option value="Mobile App">
+                📱 Mobile App
+              </option>
+
+              <option value="Research Project">
+                🔬 Research Project
+              </option>
+
+              <option value="Hackathon">
+                🏆 Hackathon
+              </option>
+
+              <option value="College Project">
+                🎓 College Project
+              </option>
+            </select>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -224,7 +289,9 @@ export default function CreateProject({
               disabled:opacity-50
             "
           >
-            <PlusCircle size={18} />
+            <PlusCircle
+              size={18}
+            />
 
             {loading
               ? "Creating..."

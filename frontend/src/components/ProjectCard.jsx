@@ -3,6 +3,8 @@ import {
   Users,
   CalendarDays,
   MoreVertical,
+  CheckCircle2,
+  TrendingUp,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
@@ -19,6 +21,15 @@ export default function ProjectCard({
           project.createdAt
         ).toLocaleDateString()
       : "Recently";
+
+  const progress =
+    project.progress || 0;
+
+  const completedTasks =
+    project.completedTasks || 0;
+
+  const totalTasks =
+    project.totalTasks || 0;
 
   return (
     <div
@@ -116,6 +127,77 @@ export default function ProjectCard({
         {project.description ||
           "No description available."}
       </p>
+
+      {/* Progress Header */}
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp
+            size={16}
+            className="text-cyan-400"
+          />
+
+          <span className="text-sm font-medium text-slate-300">
+            Progress
+          </span>
+        </div>
+
+        <span
+          className="
+            bg-cyan-500/10
+            text-cyan-400
+            px-3
+            py-1
+            rounded-full
+            text-xs
+            font-bold
+          "
+        >
+          {progress}%
+        </span>
+      </div>
+
+      {/* Progress Bar */}
+      <div
+        className="
+          w-full
+          h-3
+          bg-slate-800
+          rounded-full
+          overflow-hidden
+          mb-4
+        "
+      >
+        <div
+          className="
+            h-full
+            bg-linear-to-r
+            from-cyan-500
+            to-blue-600
+            transition-all
+            duration-700
+          "
+          style={{
+            width: `${progress}%`,
+          }}
+        />
+      </div>
+
+      {/* Task Stats */}
+      <div className="flex justify-between items-center mb-5">
+        <div className="flex items-center gap-2 text-green-400">
+          <CheckCircle2
+            size={16}
+          />
+
+          <span className="text-sm font-medium">
+            {completedTasks} Completed
+          </span>
+        </div>
+
+        <span className="text-sm text-slate-400">
+          {totalTasks} Total Tasks
+        </span>
+      </div>
 
       {/* Status */}
       <div className="mb-5">

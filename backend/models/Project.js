@@ -13,6 +13,19 @@ const projectSchema = new mongoose.Schema(
       default: "",
     },
 
+    template: {
+      type: String,
+      enum: [
+        "Blank",
+        "Web Development",
+        "Mobile App",
+        "Research Project",
+        "Hackathon",
+        "College Project",
+      ],
+      default: "Blank",
+    },
+
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

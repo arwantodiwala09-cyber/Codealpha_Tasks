@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // ======================
+    // BASIC INFO
+    // ======================
+
     name: {
       type: String,
       required: true,
@@ -33,6 +37,85 @@ const userSchema = new mongoose.Schema(
         "Member",
       ],
       default: "Member",
+    },
+
+    // ======================
+    // PROFILE
+    // ======================
+
+    phone: {
+      type: String,
+      default: "",
+    },
+
+    bio: {
+      type: String,
+      default: "",
+    },
+
+    language: {
+      type: String,
+      default: "English",
+    },
+
+    timezone: {
+      type: String,
+      default: "Asia/Kolkata",
+    },
+
+    // ======================
+    // USER PREFERENCES
+    // ======================
+
+    preferences: {
+      darkMode: {
+        type: Boolean,
+        default: true,
+      },
+
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+
+      pushNotifications: {
+        type: Boolean,
+        default: true,
+      },
+
+      taskReminder: {
+        type: Boolean,
+        default: true,
+      },
+
+      calendarSync: {
+        type: Boolean,
+        default: false,
+      },
+
+      accentColor: {
+        type: String,
+        default: "cyan",
+      },
+    },
+
+    // ======================
+    // ACCOUNT STATUS
+    // ======================
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

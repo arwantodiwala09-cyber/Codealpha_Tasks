@@ -1,81 +1,40 @@
-import { useState } from "react";
-import { X, Pencil } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 
 export default function EditTaskModal({
+  isOpen,
+  onClose,
   task,
   members = [],
-  onEdit,
+  onSave,
 }) {
-  const [isOpen, setIsOpen] =
-    useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("Medium");
+  const [status, setStatus] = useState("todo");
+  const [dueDate, setDueDate] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
 
-  const [title, setTitle] =
-    useState("");
+  useEffect(() => {
+    if (!task) return;
 
-  const [description,
-    setDescription] =
-    useState("");
-
-  const [priority,
-    setPriority] =
-    useState("Medium");
-
-  const [status, setStatus] =
-    useState("todo");
-
-  const [dueDate,
-    setDueDate] =
-    useState("");
-
-  const [assignedTo,
-    setAssignedTo] =
-    useState("");
-
-  const openModal = () => {
     setTitle(task.title || "");
-
-    setDescription(
-      task.description || ""
-    );
-
-    setPriority(
-      task.priority || "Medium"
-    );
-
-    setStatus(
-      task.status || "todo"
-    );
-
+    setDescription(task.description || "");
+    setPriority(task.priority || "Medium");
+    setStatus(task.status || "todo");
     setDueDate(
       task.dueDate
         ? task.dueDate.split("T")[0]
         : ""
     );
+    setAssignedTo(task.assignedTo?._id || "");
+  }, [task]);
 
-    setAssignedTo(
-      task.assignedTo?._id || ""
-    );
-
-    setIsOpen(true);
-
-    document.body.style.overflow =
-      "hidden";
-  };
-
-  const closeModal = () => {
-    setIsOpen(false);
-
-    document.body.style.overflow =
-      "auto";
-  };
-
-  const handleSubmit = async (
-    e
-  ) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await onEdit(task._id, {
+      await onSave({
         title,
         description,
         priority,
@@ -84,28 +43,18 @@ export default function EditTaskModal({
         assignedTo,
       });
 
-      closeModal();
+      onClose();
     } catch (error) {
       console.error(error);
     }
   };
-
+if (!task) return null;
   return (
     <>
-      <button
-        onClick={openModal}
-        className="
-          text-cyan-400
-          hover:text-cyan-300
-          transition
-        "
-      >
-        <Pencil size={16} />
-      </button>
-
+      
       {isOpen && (
         <div
-          onClick={closeModal}
+          onClick={onClose}
           className="
             fixed
             top-0
@@ -140,7 +89,7 @@ export default function EditTaskModal({
               </h2>
 
               <button
-                onClick={closeModal}
+                onClick={onClose}
                 className="
                   text-slate-400
                   hover:text-white
@@ -302,10 +251,8 @@ export default function EditTaskModal({
 
               <div className="flex gap-3">
                 <button
-                  type="button"
-                  onClick={
-                    closeModal
-                  }
+  type="button"
+  onClick={onClose}
                   className="
                     flex-1
                     bg-slate-700

@@ -7,6 +7,7 @@ const router =
 const {
   getUsers,
   updateUserRole,
+  getUserProfile,
 } = require(
   "../controllers/userController"
 );
@@ -18,7 +19,14 @@ const {
   "../middleware/authMiddleware"
 );
 
-// Get All Users
+// Profile Route
+router.get(
+  "/profile/:id",
+  protect,
+  getUserProfile
+);
+
+// All Users
 router.get(
   "/",
   protect,

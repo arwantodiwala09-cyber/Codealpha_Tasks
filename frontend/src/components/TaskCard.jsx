@@ -6,7 +6,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+import TimerButton from "./time/TimerButton";
+
 export default function TaskCard({
+  taskId,
   title,
   priority,
   assignee,
@@ -35,8 +38,7 @@ export default function TaskCard({
   const isOverdue =
     dueDate &&
     dueDate !== "No Date" &&
-    new Date(dueDate) <
-      new Date();
+    new Date(dueDate) < new Date();
 
   return (
     <div
@@ -93,11 +95,7 @@ export default function TaskCard({
             rounded-full
             text-xs
             font-semibold
-            ${
-              priorityStyles[
-                priority
-              ]?.badge
-            }
+            ${priorityStyles[priority]?.badge}
           `}
         >
           <span
@@ -105,11 +103,7 @@ export default function TaskCard({
               h-2
               w-2
               rounded-full
-              ${
-                priorityStyles[
-                  priority
-                ]?.dot
-              }
+              ${priorityStyles[priority]?.dot}
             `}
           />
 
@@ -130,9 +124,7 @@ export default function TaskCard({
             font-semibold
           "
         >
-          <AlertTriangle
-            size={14}
-          />
+          <AlertTriangle size={14} />
           Overdue Task
         </div>
       )}
@@ -141,29 +133,23 @@ export default function TaskCard({
       <div className="space-y-3 text-sm">
         <div className="flex items-center gap-2 text-slate-400">
           <User size={14} />
-
-          <span>
-            {assignee ||
-              "Unassigned"}
-          </span>
+          <span>{assignee || "Unassigned"}</span>
         </div>
 
         <div className="flex items-center gap-2 text-slate-400">
           <Calendar size={14} />
-
-          <span>
-            {dueDate ||
-              "No Date"}
-          </span>
+          <span>{dueDate || "No Date"}</span>
         </div>
 
         <div className="flex items-center gap-2 text-slate-400">
           <Flag size={14} />
-
-          <span>
-            {priority}
-          </span>
+          <span>{priority}</span>
         </div>
+      </div>
+
+      {/* Time Tracking */}
+      <div className="mt-5 pt-4 border-t border-slate-700">
+        <TimerButton taskId={taskId} />
       </div>
     </div>
   );

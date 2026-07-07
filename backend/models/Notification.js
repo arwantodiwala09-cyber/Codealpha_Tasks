@@ -24,6 +24,7 @@ const notificationSchema =
           "project_created",
           "member_added",
           "member_removed",
+          "task_comment",
         ],
       },
 

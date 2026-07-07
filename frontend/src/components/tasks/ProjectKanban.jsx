@@ -1,4 +1,12 @@
 import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
+
+import {
   Circle,
   Loader2,
   Eye,
@@ -13,7 +21,11 @@ import {
 
 import ProjectTaskCard from "./ProjectTaskCard";
 
-function Column({
+import {
+  useSocket,
+} from "../../context/SocketContext";
+
+const Column = memo(function Column({
   columnId,
   title,
   icon,
@@ -22,8 +34,8 @@ function Column({
   members,
   onDelete,
   onEdit,
-  canDelete,
-  canEdit,
+  onComment,
+  onActivity,
 }) {
   return (
     <div
@@ -67,9 +79,8 @@ function Column({
             {...provided.droppableProps}
             className={`
               p-4
-              min-h-150
+              min-h-[600px]
               space-y-4
-              transition
               ${
                 snapshot.isDraggingOver
                   ? "bg-cyan-500/5"
@@ -77,56 +88,36 @@ function Column({
               }
             `}
           >
-            {tasks.map(
-              (
-                task,
-                index
-              ) => (
-                <Draggable
-                  key={task._id}
-                  draggableId={
-                    task._id
-                  }
-                  index={index}
-                >
-                  {(provided) => (
-                    <div
-                      ref={
-                        provided.innerRef
-                      }
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                    >
-                      <ProjectTaskCard
-                        task={task}
-                        members={
-                          members
-                        }
-                        onDelete={
-                          onDelete
-                        }
-                        onEdit={
-                          onEdit
-                        }
-                        canDelete={
-                          canDelete
-                        }
-                        canEdit={
-                          canEdit
-                        }
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              )
-            )}
+            {tasks.map((task, index) => (
+              <Draggable
+                key={task._id}
+                draggableId={task._id}
+                index={index}
+              >
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                  >
+                    <ProjectTaskCard
+    task={task}
+    members={members}
+    onEdit={onEdit}
+    onDelete={onDelete}
+    onComment={onComment}
+    onActivity={onActivity}
+    canEdit={true}
+    canDelete={true}
+/>
+                  </div>
+                )}
+              </Draggable>
+            ))}
 
-            {
-              provided.placeholder
-            }
+            {provided.placeholder}
 
-            {tasks.length ===
-              0 && (
+            {tasks.length === 0 && (
               <div
                 className="
                   h-40
@@ -148,152 +139,159 @@ function Column({
       </Droppable>
     </div>
   );
-}
+});
 
+const COLUMNS = [
+  {
+    id: "todo",
+    title: "To Do",
+    icon: <Circle size={18} />,
+    color: "text-slate-400",
+  },
+  {
+    id: "progress",
+    title: "In Progress",
+    icon: <Loader2 size={18} />,
+    color: "text-cyan-400",
+  },
+  {
+    id: "review",
+    title: "Review",
+    icon: <Eye size={18} />,
+    color: "text-yellow-400",
+  },
+  {
+    id: "done",
+    title: "Done",
+    icon: <CheckCircle2 size={18} />,
+    color: "text-green-400",
+  },
+];
 export default function ProjectKanban({
   tasks,
   members,
   onDelete,
   onEdit,
+  onComment,
+  onActivity,
   canDelete = false,
   canEdit = false,
 }) {
-  const handleDragEnd =
-    async (result) => {
-      if (
-        !result.destination
-      )
-        return;
+  const { socket } = useSocket();
 
-      const taskId =
-        result.draggableId;
+  const [liveTasks, setLiveTasks] = useState(tasks);
 
-      const newStatus =
-        result.destination
-          .droppableId;
+  useEffect(() => {
+    setLiveTasks(tasks);
+  }, [tasks]);
 
-      const task =
-        tasks.find(
-          (t) =>
-            t._id === taskId
-        );
+  useEffect(() => {
+    if (!socket) return;
 
-      if (
-        !task ||
-        task.status ===
-          newStatus
-      ) {
-        return;
-      }
+    const handleTaskCreated = (task) => {
+      setLiveTasks((prev) => {
+        if (prev.some((t) => t._id === task._id)) {
+          return prev;
+        }
 
-      try {
-        await onEdit(
-          taskId,
-          {
-            status:
-              newStatus,
-          }
-        );
-      } catch (error) {
-        console.error(
-          error
-        );
-      }
+        return [task, ...prev];
+      });
     };
 
-  const columns = [
-    {
-      id: "todo",
-      title: "To Do",
-      icon: (
-        <Circle size={18} />
-      ),
-      color:
-        "text-slate-400",
-    },
-    {
-      id: "progress",
-      title:
-        "In Progress",
-      icon: (
-        <Loader2
-          size={18}
-        />
-      ),
-      color:
-        "text-cyan-400",
-    },
-    {
-      id: "review",
-      title: "Review",
-      icon: (
-        <Eye size={18} />
-      ),
-      color:
-        "text-yellow-400",
-    },
-    {
-      id: "done",
-      title: "Done",
-      icon: (
-        <CheckCircle2
-          size={18}
-        />
-      ),
-      color:
-        "text-green-400",
-    },
-  ];
+    const handleTaskUpdated = (updatedTask) => {
+      setLiveTasks((prev) =>
+        prev.map((task) =>
+          task._id === updatedTask._id
+            ? updatedTask
+            : task
+        )
+      );
+    };
 
+    const handleTaskDeleted = ({ taskId }) => {
+      setLiveTasks((prev) =>
+        prev.filter((task) => task._id !== taskId)
+      );
+    };
+
+    socket.on("taskCreated", handleTaskCreated);
+    socket.on("taskUpdated", handleTaskUpdated);
+    socket.on("taskDeleted", handleTaskDeleted);
+
+    return () => {
+      socket.off("taskCreated", handleTaskCreated);
+      socket.off("taskUpdated", handleTaskUpdated);
+      socket.off("taskDeleted", handleTaskDeleted);
+    };
+  }, [socket]);
+
+  const handleDragEnd = useCallback(
+  async (result) => {
+    if (!result.destination) return;
+
+    const taskId = result.draggableId;
+    const newStatus = result.destination.droppableId;
+
+    const task = liveTasks.find(
+      (t) => t._id === taskId
+    );
+
+    if (!task) return;
+
+    if (task.status === newStatus) return;
+
+    try {
+      onEdit({
+        ...task,
+        status: newStatus,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  [liveTasks, onEdit]
+);
+
+ const groupedTasks = useMemo(() => {
+  const grouped = {
+    todo: [],
+    progress: [],
+    review: [],
+    done: [],
+  };
+
+  liveTasks.forEach((task) => {
+    if (grouped[task.status]) {
+      grouped[task.status].push(task);
+    } else {
+      grouped.todo.push(task);
+    }
+  });
+
+  return grouped;
+}, [liveTasks]);
   return (
-    <DragDropContext
-      onDragEnd={
-        handleDragEnd
-      }
-    >
+    <DragDropContext onDragEnd={handleDragEnd}>
       <div className="grid xl:grid-cols-4 md:grid-cols-2 gap-6">
-        {columns.map(
-          (column) => (
-            <Column
-              key={
-                column.id
-              }
-              columnId={
-                column.id
-              }
-              title={
-                column.title
-              }
-              icon={
-                column.icon
-              }
-              color={
-                column.color
-              }
-              tasks={tasks.filter(
-                (t) =>
-                  t.status ===
-                  column.id
-              )}
-              members={
-                members
-              }
-              onDelete={
-                onDelete
-              }
-              onEdit={
-                onEdit
-              }
-              canDelete={
-                canDelete
-              }
-              canEdit={
-                canEdit
-              }
-            />
-          )
-        )}
+        {COLUMNS.map((column) => (
+          <Column
+  key={column.id}
+  columnId={column.id}
+  title={column.title}
+  icon={column.icon}
+  color={column.color}
+  tasks={groupedTasks[column.id]}
+  members={members}
+  onDelete={onDelete}
+  onEdit={onEdit}
+  onComment={onComment}
+  onActivity={onActivity}
+  canDelete={canDelete}
+  canEdit={canEdit}
+/>
+        ))}
       </div>
     </DragDropContext>
   );
 }
+

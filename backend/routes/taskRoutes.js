@@ -2,6 +2,7 @@ const express = require("express");
 
 const {
   createTask,
+  getTasks,
   getMyTasks,
   getAssignedTasks,
   getDueTodayTasks,
@@ -24,7 +25,18 @@ const {
 const router =
   express.Router();
 
+// ==============================
+// Calendar - Get All Tasks
+// ==============================
+router.get(
+  "/all",
+  protect,
+  getTasks
+);
+
+// ==============================
 // View Tasks
+// ==============================
 router.get(
   "/",
   protect,
@@ -55,7 +67,9 @@ router.get(
   getTasksByProject
 );
 
+// ==============================
 // Create Task
+// ==============================
 router.post(
   "/",
   protect,
@@ -63,7 +77,9 @@ router.post(
   createTask
 );
 
+// ==============================
 // Update Task
+// ==============================
 router.put(
   "/:id",
   protect,
@@ -71,7 +87,9 @@ router.put(
   updateTask
 );
 
+// ==============================
 // Delete Task
+// ==============================
 router.delete(
   "/:id",
   protect,
