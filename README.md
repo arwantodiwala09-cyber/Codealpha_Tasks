@@ -234,32 +234,6 @@ npm run dev
 
 ---
 
-# 📸 Screenshots
-
-## Login
-
-> Add Screenshot Here
-
----
-
-## Dashboard
-
-> Add Screenshot Here
-
----
-
-## Kanban Board
-
-> Add Screenshot Here
-
----
-
-## Project Details
-
-> Add Screenshot Here
-
----
-
 ## Analytics
 
 > Add Screenshot Here
